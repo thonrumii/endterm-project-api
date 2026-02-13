@@ -226,7 +226,7 @@ These diagrams illustrate:
 * Class relationships
 * Inheritance and composition
 
-H. Instructions to Run the Spring Boot Application
+**H. Instructions to Run the Spring Boot Application**
 
 Requirements:
 * Java JDK 17
@@ -253,9 +253,71 @@ In IntelliJ IDEA:
 http://localhost:8081/api/workouts
 ```
 
-I. Reflection Section
+**I. Reflection Section**
 
 This project helped me deepen my understanding of JDBC, REST APIs, and layered system design.
 I learned how SOLID principles improve maintainability, extensibility, and readability in real applications.
 
 The main challenges were configuring JDBC connections, managing validation across layers, and refactoring the code to apply dependency inversion properly. Despite these challenges, the project clearly demonstrated the advantages of a well-structured, multi-layer architecture.
+
+**J. Bonus task - In-memory caching layer**
+
+Purpose: To improve performance and demonstrate advanced architectural design, an in-memory caching mechanism was implemented.
+
+The goal of this bonus task was to:
+- Reduce repeated database queries for frequently accessed data
+- Demonstrate correct implementation of the Singleton pattern
+- Preserve layered architecture
+- Maintain SOLID principles
+
+**What is Cached**
+
+The following frequently used endpoints are cached:
+- `GET /api/workouts`
+- `GET /api/workouts/sorted/duration`
+
+The first request retrieves data from the database.
+Subsequent requests return data directly from memory until the cache is invalidated.
+
+**Implementation**
+
+Singleton Pattern – CacheSingleton
+* Implemented using ConcurrentHashMap<String, Object>
+* Thread-safe
+* Ensures a single shared cache instance
+* Provides: get, put, remove, clear
+
+**Decorator Pattern – CachedWorkoutService**
+
+Caching is implemented using a decorator:
+``` 
+CachedWorkoutService implements IWorkoutService
+```
+
+It wraps the original WorkoutService without modifying it.
+
+**Architecture flow:**
+
+Controller -> CachedWorkoutService -> WorkoutService -> Repository -> Database
+
+This preserves layered architecture and follows the Open–Closed Principle.
+
+**Cache Invalidation**
+
+Cache is automatically cleared when:
+- A workout is created (POST)
+- A workout is updated (PUT)
+- A workout is deleted (DELETE)
+
+This guarantees data consistency.
+
+**Design Principles Demonstrated**
+* Singleton Pattern (cache instance)
+* Decorator Pattern (service wrapper)
+* Dependency Injection (@Primary)
+* SOLID compliance (SRP, OCP, DIP preserved)
+
+**Performance Effect**
+
+Without caching: every GET request hits the database.
+With caching: repeated GET requests are served from memory, reducing database load and response time.
